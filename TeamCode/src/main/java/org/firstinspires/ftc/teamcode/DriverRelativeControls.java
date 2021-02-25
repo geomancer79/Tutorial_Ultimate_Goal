@@ -1,3 +1,9 @@
+/** This is the code used for the field-centric driving tutorial
+ This is by no means a perfect code
+ There are a number of improvements that can be made
+ So, feel free to add onto this and make it better
+ */
+
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
@@ -18,8 +24,15 @@ import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 
 import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
 
+/**
+ * feel free to change the name or group of your class to better fit your robot
+ */
 @TeleOp(name = "DriverRelativeControl", group = "tutorial")
 public class DriverRelativeControls extends LinearOpMode {
+
+    /**
+     * make sure to change these motors to your team's preference and configuration
+     */
     private DcMotor frontLeft;
     private DcMotor frontRight;
     private DcMotor backRight;
@@ -32,6 +45,10 @@ public class DriverRelativeControls extends LinearOpMode {
 
     @Override
     public void runOpMode() {
+
+        /**
+         * you can change the variable names to make more sense
+         */
         double driveTurn;
         //double driveVertical;
         //double driveHorizontal;
@@ -45,11 +62,15 @@ public class DriverRelativeControls extends LinearOpMode {
         double gamepadXControl;
         double gamepadYControl;
 
+        /**
+         * make sure to change this to how your robot is configured
+         */
         frontLeft = hardwareMap.dcMotor.get("frontLeft");
         frontRight = hardwareMap.dcMotor.get("frontRight");
         backRight = hardwareMap.dcMotor.get("backRight");
         backLeft = hardwareMap.dcMotor.get("backLeft");
 
+        //might need to change the motors being reversed
         frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
         backRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -61,7 +82,9 @@ public class DriverRelativeControls extends LinearOpMode {
         parameters.loggingTag = "IMU";
         parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
 
-
+        /**
+         * make sure you've configured your imu properly and with the correct device name
+         */
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
 
@@ -86,6 +109,9 @@ public class DriverRelativeControls extends LinearOpMode {
             gamepadXControl = Math.cos(Math.toRadians(movementDegree)) * gamepadHypot;
             gamepadYControl = Math.sin(Math.toRadians(movementDegree)) * gamepadHypot;
 
+            /**
+             * again, make sure you've changed the motor names and variables to fit your team
+             */
             frontRight.setPower(gamepadYControl * Math.abs(gamepadYControl) - gamepadXControl * Math.abs(gamepadXControl) + driveTurn);
             backRight.setPower(gamepadYControl * Math.abs(gamepadYControl) + gamepadXControl * Math.abs(gamepadXControl) + driveTurn);
             frontLeft.setPower(gamepadYControl * Math.abs(gamepadYControl) + gamepadXControl * Math.abs(gamepadXControl) - driveTurn);
@@ -108,6 +134,8 @@ public class DriverRelativeControls extends LinearOpMode {
             }
         });
     }
+
+    //allows us to quickly get our z angle
     public double getAngle() {
         return imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES).firstAngle;
     }
