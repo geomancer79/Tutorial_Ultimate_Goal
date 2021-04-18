@@ -1,13 +1,3 @@
-/**
- * in reality, for these ftc applications, the system tends to be too noisy and can cause excessive volatility for a purely PID algorithm
- * which is why PID for velocity in FTC may not be ideal
- * check out PIDF for a more suitable algorithm
- * feedforward takes a look at the effect of PID in the system to compensate for future actions
- * future-based adjustment rather than feedback-based adjustment
- * might make a video on it in the future :o
- */
-
-
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -21,23 +11,17 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @TeleOp
 public class PIDTutorial extends LinearOpMode {
 
-    /**
-     * make sure to make sure your the code matches your configuration
-     */
     private DcMotorEx shooterMotor;
 
-    public double speed = 1200; //arbitrary number; static to allow for analyzing how PID performs through multiple speeds in dashboard
+    public static double speed = 1200;
 
-    public static PIDCoefficients pidCoeffs = new PIDCoefficients(0, 0, 0); //PID coefficients that need to be tuned probably through FTC dashboard
-    public PIDCoefficients pidGains = new PIDCoefficients(0, 0, 0); //PID gains which we will define later in the process
+    public static PIDCoefficients pidCoeffs = new PIDCoefficients(0, 0, 0);
+    public PIDCoefficients pidGains = new PIDCoefficients(0, 0, 0);
 
-    ElapsedTime PIDTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS); //timer
+    ElapsedTime PIDTimer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
 
     @Override
     public void runOpMode() {
-        /**
-         * basic initialization stuff needs to be changed to suit your configuration (motor name, direction, etc.)
-         */
         shooterMotor = hardwareMap.get(DcMotorEx.class, "shooterMotor");
 
 
@@ -52,44 +36,35 @@ public class PIDTutorial extends LinearOpMode {
         if (opModeIsActive()) {
             while (opModeIsActive()) {
 
-                PID(speed); //running the PID algorithm at defined speed
+                PID(speed);
 
                 telemetry.update();
             }
         }
     }
 
-    double lastError = 0;
     double integral = 0;
-    //initializing our variables
+    double lastError = 0;
 
-    public void PID(double targetVelocity){
-        PIDTimer.reset(); //resets the timer
+    public void PID(double targetVelocity) {
+
+        PIDTimer.reset();
 
         double currentVelocity = shooterMotor.getVelocity();
-        double error = targetVelocity - currentVelocity; //pretty self explanatory--just finds the error
 
-        double deltaError = error - lastError; //finds how the error changes from the previous cycle
-        double derivative = deltaError / PIDTimer.time(); //deltaError/time gives the rate of change (sensitivity of the system)
+        double error = targetVelocity - currentVelocity;
 
         integral += error * PIDTimer.time();
-        //continuously sums error accumulation to prevent steady-state error (friction, not enough p-gain to cause change)
 
-        pidGains.p = error * pidCoeffs.p;
-        //acts directly on the error; p-coefficient identifies how much to act upon it
-        // p-coefficient (very low = not much effect; very high = lots of overshoot/oscillations)
-        pidGains.i = integral * pidCoeffs.i;
-        //multiplies integrated error by i-coefficient constant
-        // i-coefficient (very high = fast reaction to steady-state error but lots of overshoot; very low = slow reaction to steady-state error)
-        // for velocity, because friction isn't a big issue, only reason why you would need i would be for insufficient correction from p-gain
-        pidGains.d = derivative * pidCoeffs.d;
-        //multiplies derivative by d-coefficient
-        // d-coefficient (very high = increased volatility; very low = too little effect on dampening system)
+        double deltaError = error - lastError;
+        double derivative = deltaError / PIDTimer.time();
+
+        pidGains.p = pidCoeffs.p * error;
+        pidGains.i = pidCoeffs.i * integral;
+        pidGains.d = pidCoeffs.d * derivative;
 
         shooterMotor.setVelocity(pidGains.p + pidGains.i + pidGains.d + targetVelocity);
-        //adds up the P I D gains with the targetVelocity bias
 
         lastError = error;
-        //makes our current error as our new last error for the next cycle
     }
 }
